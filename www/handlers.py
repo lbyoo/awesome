@@ -14,7 +14,7 @@ from aiohttp import web
 from coroweb import get, post
 from apis import Page, APIValueError, APIResourceNotFoundError
 
-from models import User, Comment, Blog, next_id, Activities, Gifts
+from models import User, Comment, Blog, next_id, Activities, Gifts, UserGifts
 from config import configs
 
 COOKIE_NAME = 'awesession'
@@ -314,7 +314,7 @@ def api_delete_blog(request, *, id):
 
 @get('/activities/{id}')
 def activities(request,*,id):
-    
+    user = request.__user__
     activity = yield from Activities.find(id)
     if not activity:
         return {
@@ -322,11 +322,23 @@ def activities(request,*,id):
             'errmsg': '活动id不存在'
         }
 
+    if activity.state != "1":
+        return {
+            '__template__': 'errpage.html',
+            'errmsg': '活动已停止'
+        }               
+
     gifts = yield from Gifts.findAll('activity_id = ?',[id])
+    if user is not None:
+        user_gifts = yield from UserGifts.findAll('user_id=? and activity_id=?',[user.id,activity.id])
+    else:
+        user_gifts = []
+
     return {
         '__template__': 'activities.html',
         'activity':activity,
-        'gifts':gifts
+        'gifts':gifts,
+        'user_gifts':user_gifts
     }
 
 
@@ -431,3 +443,50 @@ def api_activity_state(request,*,id):
     return activity
 
 
+@get("/api/activity/gift/{id}/select")
+def api_activity_gift_select(request,*,id):
+    user = request.__user__
+    if user is None:
+        raise APIPermissionError('Please signin first.')
+
+    gift = yield from Gifts.find(id)
+    if gift is None:
+        raise APIResourceNotFoundError('Gift')
+
+    activity = yield from Activities.find(gift.activity_id)
+    if activity is None:
+        raise APIResourceNotFoundError('Activity')
+    if activity.state != "1":
+        raise APIError('活动已停止')   
+
+    user_gifts = yield from UserGifts.findAll('user_id=? and activity_id = ?',[user.id,activity.id])
+    if len(user_gifts) == 0:    
+        user_gift = UserGifts(user_id = user.id,activity_id = activity.id,
+            gift_id = gift.id,user_name=user.name,gift_name=gift.name,gift_image=gift.image,user_email=user.email)
+        yield from user_gift.save()
+    else:
+        user_gift = user_gifts[0]
+        user_gift.gift_id = gift.id
+        user_gift.gift_name = gift.name
+        user_gift.gift_image = gift.image
+        user_gift.user_name = user.name
+        user_gift.user_email = user.email
+        print("------------------------------------",user)
+        yield from user_gift.update()
+    
+
+    return dict(gift=gift)  
+
+
+@get('/manage/activity/{id}/report')
+def manage_activity_report(request,*,id):
+    check_admin(request)
+    user_gifts = yield from UserGifts.findAll('activity_id=?',[id],orderBy='created_at desc')
+
+    activity = yield from Activities.find(id)
+    return{
+        '__template__':'manage_activity_report.html',
+        'user_gifts':user_gifts,
+        'activity':activity
+
+    }

@@ -18,6 +18,7 @@
 {% endblock %}
 
 {% block content %}
+
 <table class="uk-table uk-table-hover">
     <thead>
         <tr>
@@ -27,6 +28,13 @@
         </tr>
     </thead>
     <tbody>
+        {% if not activities %}
+        <tr>
+            <td>暂无可用活动</td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% endif %}
         {% for activity in activities %}
         <tr >
             <td>

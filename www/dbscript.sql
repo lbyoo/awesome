@@ -20,3 +20,13 @@ create table gifts (
     key idx_created_at (created_at),
     primary key (id)
 ) engine=innodb default charset=utf8;
+
+create table user_gifts (
+    id varchar(50) not null,
+    user_id varchar(50) not null,
+    activity_id varchar(50) not null,
+    gift_id varchar(50) not null,
+    created_at real not null,
+    key idx_created_at (created_at),
+    primary key (id)
+) engine=innodb default charset=utf8;

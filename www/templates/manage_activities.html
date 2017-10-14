@@ -15,7 +15,7 @@ $(document).ready(function(){
     $("#btn_submit").click(function(){
         $.ajax({
             url:"/api/activities",
-            type:"POST",
+            type:"post",
             data:"activity_name=" + $("#activity_name").val(),
             success:function(rt){
                 refresh()
@@ -53,7 +53,7 @@ function switch_state(id){
 
     <form class="uk-form">
         <label>新增活动名称 </label><input id="activity_name" type="text" name="activity_name" size="20">
-        <button class="uk-button uk-button-primary" id="btn_submit">保存</button>
+        <button class="uk-button uk-button-primary" id="btn_submit" >保存</button>
     </form>
 </div>
 
@@ -86,7 +86,7 @@ function switch_state(id){
                 <span>{{ activity.creator_name }}</span>
             </td>
             <td>
-                
+                <a href="/manage/activity/{{activity.id}}/report"><i class="uk-icon-table" alt="统计"></i> 
                 <a href="#0" onclick="UIkit.modal.confirm('确认删除么?', function(){ delete_activity('{{ activity.id }}'); });"><i class="uk-icon-trash-o"></i></a>
             </td>
         </tr>

@@ -65,6 +65,19 @@ class Gifts(Model):
 
     id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
     name = StringField(ddl='varchar(50)')
-    image = StringField(ddl='varchar(300)')
+    image = StringField(ddl='varchar(500)')
     activity_id = StringField(ddl='varchar(50)')
+    created_at = FloatField(default=time.time)
+
+
+class UserGifts(Model):
+    __table__ = 'user_gifts'
+    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
+    user_id = StringField(ddl='varchar(50)')
+    user_name = StringField(ddl='varchar(50)')
+    user_email = StringField(ddl='varchar(50)')
+    activity_id = StringField(ddl='varchar(50)')
+    gift_id = StringField(ddl='varchar(50)')
+    gift_name = StringField(ddl='varchar(50)')
+    gift_image = StringField(ddl='varchar(500)')
     created_at = FloatField(default=time.time)

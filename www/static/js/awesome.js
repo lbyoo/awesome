@@ -129,6 +129,8 @@ function refresh() {
         t = new Date().getTime(),
         url = location.pathname;
     if (location.search) {
+        // search = location.search.substring(0,location.search.indexOf("t="))
+
         url = url + location.search + '&t=' + t;
     }
     else {
@@ -430,8 +432,11 @@ $(function () {
 });
 
 $(function() {
-    if (location.pathname === '/' || location.pathname.indexOf('/blog')===0) {
-        $('li[data-url=blogs]').addClass('uk-active');
+    if (location.pathname === '/' ) {
+        $('li[data-url=activities]').addClass('uk-active');
+    }
+    if (location.pathname === '/manage/activities' ) {
+        $('li[data-url=manage-activities]').addClass('uk-active');
     }
 });
 

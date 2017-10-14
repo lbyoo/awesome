@@ -5,7 +5,17 @@
 {% block beforehead %}
 
 <script>
-
+    function select_gift(id){
+        $.ajax({
+            url:'/api/activity/gift/' + id + '/select',
+            type:'get',
+            success:function(rt){
+                console.log(rt)
+                // UIkit.modal.alert("您选择的礼物为：" + rt.gift.name)
+                refresh()
+            }
+        })
+    }
 
 </script>
 
@@ -18,18 +28,30 @@
     <li><span>{{ activity.name }}</span></li>
 </ul>
 <div class="uk-grid">
-{% for gift in gifts %}
-<div class="uk-width-medium-1-5 ">
-    <div class="uk-panel uk-panel-space">
-        <h3 class="uk-panel-title">{{gift.name}}</h3>
-        <div class="uk-panel-teaser">
-            <img src="../{{gift.image}}" alt="">
-        </div>  
-        
-        <a class="uk-button uk-button-primary" href="#">选择</a>
+    {% for gift in gifts %}
+    <div class="uk-width-medium-1-5 ">
+        <div class="uk-panel uk-panel-space">
+            <h3 class="uk-panel-title">{{gift.name}}</h3>
+            <div class="uk-panel-teaser">
+                <img src="../{{gift.image}}" alt="">
+            </div>  
+
+            <a class="uk-button uk-button-primary" href="#" onclick="select_gift('{{gift.id}}');">选择</a>
+        </div>
     </div>
+    {% endfor %}
 </div>
-{% endfor %}
+<div>您选择的礼物</div>
+<div class="uk-grid">
+    {% for user_gift in user_gifts %}
+    <div class="uk-panel uk-panel-box uk-panel-space uk-width-1-5">
+            
+            <div class="uk-panel-teaser">
+                <img src="../{{user_gift.gift_image}}" alt="">
+            </div>  
+            <h3 class="uk-panel-title">{{user_gift.gift_name}}</h3>
+        </div>
+    {% endfor %}
 </div>
 
 
