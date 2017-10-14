@@ -5,8 +5,8 @@ __author__ = 'Michael Liao'
 
 ' url handlers '
 
-import re, time, json, logging, hashlib, base64, asyncio
-
+import re, time, json, logging, hashlib, base64, asyncio,uuid
+import os.path
 import markdown2
 
 from aiohttp import web
@@ -14,7 +14,7 @@ from aiohttp import web
 from coroweb import get, post
 from apis import Page, APIValueError, APIResourceNotFoundError
 
-from models import User, Comment, Blog, next_id
+from models import User, Comment, Blog, next_id, Activities, Gifts
 from config import configs
 
 COOKIE_NAME = 'awesession'
@@ -310,3 +310,110 @@ def api_delete_blog(request, *, id):
     blog = yield from Blog.find(id)
     yield from blog.remove()
     return dict(id=id)
+
+@get('/activities/{id}')
+def activities(request,*,id):
+    
+    activity = yield from Activities.find(id)
+    if not activity:
+        return {
+            '__template__': 'errpage.html',
+            'errmsg': '活动id不存在'
+        }
+
+    gifts = yield from Gifts.findAll('activity_id = ?',[id])
+    return {
+        '__template__': 'activities.html',
+        'activity':activity,
+        'gifts':gifts
+    }
+
+
+@get('/manage/activities')
+def manage_activites(*,page='1'):
+    page_index = get_page_index(page)
+    num = yield from Activities.findNumber('count(id)')
+    page = Page(num,page_index)
+    print(page)
+    if num == 0:
+        activities = []
+    else:
+        activities = yield from Activities.findAll(orderBy='created_at desc', limit=(page.offset, page.limit))
+    return {
+        '__template__': 'manage_activities.html',
+        'page':page,
+        'activities':activities
+    }    
+
+@post('/api/activities')
+def api_create_activities(request,*,activity_name):
+    check_admin(request)
+    if not activity_name or not activity_name.strip():
+        raise APIValueError('name', 'activity_name cannot be empty.')
+    
+    activity = Activities(creator=request.__user__.id, creator_name=request.__user__.name, name = activity_name.strip())
+    yield from activity.save()
+    return activity
+
+@get('/api/activity/{id}/delete')
+def api_delete_activity(request,*,id):
+    check_admin(request)
+    activity = yield from Activities.find(id)
+    yield from activity.remove()
+    return dict(id=id)
+
+
+@get('/manage/activity/{activity_id}/gifts')
+def manage_activity_gifts(request,*,activity_id):
+    check_admin(request)
+    activity = yield from Activities.find(activity_id)
+    gifts = yield from Gifts.findAll('activity_id = ?',[activity_id])
+    return{
+        '__template__': 'manage_activity_gifts.html',
+        'activity':activity,
+        'gifts':gifts
+    }
+
+@post('/api/activity/{activity_id}/gift')
+def manage_activity_gift(request,*,activity_id,gift_name):
+    check_admin(request)
+    gift = Gifts(activity_id = activity_id, name = gift_name)
+    yield from gift.save()
+    return gift
+
+@get('/manage/activity/{activity_id}/gift')
+def manage_activity_gift_add(request,*,activity_id):
+    check_admin(request)
+    activity = yield from Activities.find(activity_id)
+    return  {
+        '__template__':'manage_activity_gift_add.html',
+        'activity':activity
+    } 
+
+@post('/manage/activity/{activity_id}/gift')
+def manage_activity_gift_add_post(request,*,activity_id,gift_name,image):
+    check_admin(request)
+
+    errmsg = ''
+    if image.filename.endswith(('jpg','jpeg','png')):
+        suffix = os.path.splitext(image.filename)[1]
+        fn = uuid.uuid4().hex + suffix
+        open('static/img/' + fn, 'wb').write(image.file.read())
+        gift = Gifts(activity_id = activity_id,name = gift_name,image = 'static/img/%s'%fn)
+        yield from gift.save()
+    else:
+        errmsg = '图片文件格式不正确'
+
+    activity = yield from Activities.find(activity_id)
+    return  {
+        '__template__':'manage_activity_gift_add.html',
+        'activity':activity,
+        'errmsg':errmsg
+    }     
+
+@get('/api/gift/{id}/delete')
+def api_gift_delete(request,*,id):
+    check_admin(request)
+    gift = yield from Gifts.find(id)
+    yield from gift.remove()
+    return gift

@@ -67,6 +67,7 @@ def create_args_string(num):
         L.append('?')
     return ', '.join(L)
 
+
 class Field(object):
 
     def __init__(self, name, column_type, primary_key, default):
@@ -102,6 +103,7 @@ class TextField(Field):
 
     def __init__(self, name=None, default=None):
         super().__init__(name, 'text', False, default)
+
 
 class ModelMetaclass(type):
 
@@ -238,3 +240,4 @@ class Model(dict, metaclass=ModelMetaclass):
         rows = yield from execute(self.__delete__, args)
         if rows != 1:
             logging.warn('failed to remove by primary key: affected rows: %s' % rows)
+

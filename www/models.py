@@ -47,3 +47,24 @@ class Comment(Model):
     user_image = StringField(ddl='varchar(500)')
     content = TextField()
     created_at = FloatField(default=time.time)
+
+class Activities(Model):
+    __table__ = 'activities'
+
+    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
+    name = StringField(ddl='varchar(50)')
+    begin_date = FloatField(default=time.time)
+    end_date = FloatField(default=time.time)
+    created_at = FloatField(default=time.time)
+    creator = StringField(ddl='varchar(50)')
+    state = StringField(ddl='varchar(10)', default='1')
+    creator_name = StringField(ddl='varchar(50)')
+
+class Gifts(Model):
+    __table__ = 'gifts'
+
+    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
+    name = StringField(ddl='varchar(50)')
+    image = StringField(ddl='varchar(300)')
+    activity_id = StringField(ddl='varchar(50)')
+    created_at = FloatField(default=time.time)
