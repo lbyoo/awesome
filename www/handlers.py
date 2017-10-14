@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = 'Michael Liao'
+__author__ = 'lbyoo'
 
 ' url handlers '
 
@@ -78,17 +78,18 @@ def cookie2user(cookie_str):
 @get('/')
 def index(*, page='1'):
     page_index = get_page_index(page)
-    num = yield from Blog.findNumber('count(id)')
+    num = yield from Activities.findNumber('count(id)',where="state = '1'")
     page = Page(num)
     if num == 0:
-        blogs = []
+        activities = []
     else:
-        blogs = yield from Blog.findAll(orderBy='created_at desc', limit=(page.offset, page.limit))
+        activities = yield from Activities.findAll(where="state='1'", orderBy='created_at desc', limit=(page.offset, page.limit))
     return {
-        '__template__': 'blogs.html',
+        '__template__': 'activities_index.html',
         'page': page,
-        'blogs': blogs
+        'activities': activities
     }
+
 
 @get('/blog/{id}')
 def get_blog(id):
@@ -417,3 +418,16 @@ def api_gift_delete(request,*,id):
     gift = yield from Gifts.find(id)
     yield from gift.remove()
     return gift
+
+@get("/api/activity/{id}/state")
+def api_activity_state(request,*,id):
+    check_admin(request)
+    activity = yield from Activities.find(id)
+    if activity.state == '1':
+        activity.state = '0'
+    else:
+        activity.state = '1'
+    yield from activity.update()    
+    return activity
+
+

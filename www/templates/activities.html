@@ -13,6 +13,11 @@
 
 {% block content %}
 
+<ul class="uk-breadcrumb">
+    <li><a href="/">活动</a></li>
+    <li><span>{{ activity.name }}</span></li>
+</ul>
+<div class="uk-grid">
 {% for gift in gifts %}
 <div class="uk-width-medium-1-5 ">
     <div class="uk-panel uk-panel-space">
@@ -25,5 +30,7 @@
     </div>
 </div>
 {% endfor %}
+</div>
+
 
 {% endblock %}

@@ -6,35 +6,44 @@
 
 <script>
 
-    $(document).ready(function(){
-        $("[v-time]").each(function(index,element){
-            $(this).text(parseFloat($(this).attr('v-time')).toDateTime())
-
-        })
-
-        $("#btn_submit").click(function(){
-            $.ajax({
-                url:"/api/activities",
-                type:"POST",
-                data:"activity_name=" + $("#activity_name").val(),
-                success:function(rt){
-                    refresh()
-                }
-
-            })    
-        })
+$(document).ready(function(){
+    $("[v-time]").each(function(index,element){
+        $(this).text(parseFloat($(this).attr('v-time')).toDateTime())
 
     })
-    function delete_activity(id){
+
+    $("#btn_submit").click(function(){
         $.ajax({
-            url:"/api/activity/" + id + "/delete",
-            type:"GET",
+            url:"/api/activities",
+            type:"POST",
+            data:"activity_name=" + $("#activity_name").val(),
             success:function(rt){
                 refresh()
             }
 
         })    
-    }
+    })
+
+})
+function delete_activity(id){
+    $.ajax({
+        url:"/api/activity/" + id + "/delete",
+        type:"GET",
+        success:function(rt){
+            refresh()
+        }
+
+    })    
+}
+function switch_state(id){
+    $.ajax({
+        url:"/api/activity/" + id + "/state",
+        type:"GET",
+        success:function(rt){
+            refresh()
+        }
+    })
+}
 </script>
 
 {% endblock %}
@@ -43,7 +52,7 @@
 <div>
 
     <form class="uk-form">
-        <label>活动名称 </label><input id="activity_name" type="text" name="activity_name" size="20">
+        <label>新增活动名称 </label><input id="activity_name" type="text" name="activity_name" size="20">
         <button class="uk-button uk-button-primary" id="btn_submit">保存</button>
     </form>
 </div>
@@ -63,7 +72,7 @@
         {% for activity in activities %}
         <tr >
             <td>
-                <a target="_blank" href="">{{ activity.name }}</a>
+                <a href="/activities/{{activity.id}}">{{ activity.name }}</a>
             </td>
             <td>
                 <span v-time="{{ activity.created_at }}"></span>
@@ -71,12 +80,13 @@
             <td>
                 <span><a href="/manage/activity/{{activity.id}}/gifts">礼物</a></span>
             <td>
-                <span>{{ activity.state  }}</span>
+                <span><a href="#0" onclick="UIkit.modal.confirm('更改状态?', function(){ switch_state('{{ activity.id }}'); });">{% if activity.state == "1" %}<i class="uk-icon-unlock"></i>{% else %}<i class="uk-icon-lock"></i>{% endif %}</a></span>
             </td>
             <td>
                 <span>{{ activity.creator_name }}</span>
             </td>
             <td>
+                
                 <a href="#0" onclick="UIkit.modal.confirm('确认删除么?', function(){ delete_activity('{{ activity.id }}'); });"><i class="uk-icon-trash-o"></i></a>
             </td>
         </tr>
