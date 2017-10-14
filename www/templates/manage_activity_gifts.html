@@ -1,0 +1,70 @@
+{% extends '__base__.html' %}
+
+{% block title %}员工福利{% endblock %}
+
+{% block beforehead %}
+<script>
+
+$(document).ready(function(){
+    $("[v-time]").each(function(index,element){
+        $(this).text(parseFloat($(this).attr('v-time')).toDateTime())
+    })
+
+
+})
+function delete_gift(id){
+    var htmlobj = $.ajax({
+        url:"/api/gift/" + id + "/delete",
+        type:"get"  
+    })
+    console.log(htmlobj)
+    refresh()
+}
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+
+
+    <ul class="uk-breadcrumb">
+        <li><a href="/manage/activities">活动管理</a></li>
+        <li class="uk-active"><snap>{{ activity.name }}</snap></li>    
+    </ul>
+    <div class="uk-width-1-1">
+    <a class="uk-button uk-button-primary " href="/manage/activity/{{activity.id}}/gift">增加</a>
+    </div>
+
+    <table class="uk-table uk-table-hover" >
+        <thead>
+            <tr>
+                <th class="uk-width-1-10">图片</th>
+                <th class="uk-width-5-10">礼物名称</th>
+                <th class="uk-width-1-10">创建时间</th>
+                <th class="uk-width-1-10">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for gift in gifts %}
+            <tr >
+                <td><img class="uk-thumbnail-mini" src="../../../{{ gift.image }}"></td>
+                <td>
+                    <a target="_blank" href="">{{ gift.name }}</a>
+                </td>
+                <td>
+                    <span v-time="{{ gift.created_at }}"></span>
+                </td>
+
+                <td>
+                    <a href="#0" onclick="UIkit.modal.confirm('确认删除么?', function(){ delete_gift('{{ gift.id }}'); });"><i class="uk-icon-trash-o"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+
+
+
+{% endblock %}
