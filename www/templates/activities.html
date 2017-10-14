@@ -1,0 +1,29 @@
+{% extends '__base__.html' %}
+
+{% block title %}员工福利{% endblock %}
+
+{% block beforehead %}
+
+<script>
+
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+{% for gift in gifts %}
+<div class="uk-width-medium-1-5 ">
+    <div class="uk-panel uk-panel-space">
+        <h3 class="uk-panel-title">{{gift.name}}</h3>
+        <div class="uk-panel-teaser">
+            <img src="../{{gift.image}}" alt="">
+        </div>  
+        
+        <a class="uk-button uk-button-primary" href="#">选择</a>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
