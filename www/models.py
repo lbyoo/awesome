@@ -81,3 +81,25 @@ class UserGifts(Model):
     gift_name = StringField(ddl='varchar(50)')
     gift_image = StringField(ddl='varchar(500)')
     created_at = FloatField(default=time.time)
+
+#budget 
+class Budgets(Model):
+    __table__ = 'budgets'
+    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
+    name = StringField(ddl='varchar(50)')
+    creator = StringField(ddl='varchar(50)')
+    creator_name = StringField(ddl='varchar(50)')
+    state = StringField(ddl='varchar(10)', default='1')
+    created_at = FloatField(default=time.time)
+
+class UserBudgets(Model):
+    __table__ = 'user_budgets'
+    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
+    user_id = StringField(ddl='varchar(50)')
+    user_name = StringField(ddl='varchar(50)')
+    user_email = StringField(ddl='varchar(50)')
+    budget_id = StringField(ddl='varchar(50)')
+    budget_type = StringField(ddl='varchar(50)')
+    budget_fee = FloatField(default=0)
+    created_at = FloatField(default=time.time)
+    

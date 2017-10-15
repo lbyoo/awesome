@@ -6,15 +6,15 @@ __author__ = 'lbyoo'
 ' url handlers '
 
 import re, time, json, logging, hashlib, base64, asyncio,uuid
-import os.path
+import os.path,time
 import markdown2
 
 from aiohttp import web
 
 from coroweb import get, post
-from apis import Page, APIValueError, APIResourceNotFoundError
+from apis import Page, APIValueError, APIResourceNotFoundError, APIPermissionError
 
-from models import User, Comment, Blog, next_id, Activities, Gifts, UserGifts
+from models import User, Comment, Blog, next_id, Activities, Gifts, UserGifts,Budgets,UserBudgets
 from config import configs
 
 COOKIE_NAME = 'awesession'
@@ -343,11 +343,10 @@ def activities(request,*,id):
 
 
 @get('/manage/activities')
-def manage_activites(*,page='1'):
+def manage_activites(request,*,page='1'):
     page_index = get_page_index(page)
     num = yield from Activities.findNumber('count(id)')
     page = Page(num,page_index)
-    print(page)
     if num == 0:
         activities = []
     else:
@@ -378,7 +377,6 @@ def api_delete_activity(request,*,id):
 
 @get('/manage/activity/{activity_id}/gifts')
 def manage_activity_gifts(request,*,activity_id):
-    check_admin(request)
     activity = yield from Activities.find(activity_id)
     gifts = yield from Gifts.findAll('activity_id = ?',[activity_id])
     return{
@@ -396,7 +394,6 @@ def manage_activity_gift(request,*,activity_id,gift_name):
 
 @get('/manage/activity/{activity_id}/gift')
 def manage_activity_gift_add(request,*,activity_id):
-    check_admin(request)
     activity = yield from Activities.find(activity_id)
     return  {
         '__template__':'manage_activity_gift_add.html',
@@ -405,8 +402,6 @@ def manage_activity_gift_add(request,*,activity_id):
 
 @post('/manage/activity/{activity_id}/gift')
 def manage_activity_gift_add_post(request,*,activity_id,gift_name,image):
-    check_admin(request)
-
     errmsg = ''
     if image.filename.endswith(('jpg','jpeg','png')):
         suffix = os.path.splitext(image.filename)[1]
@@ -471,7 +466,9 @@ def api_activity_gift_select(request,*,id):
         user_gift.gift_image = gift.image
         user_gift.user_name = user.name
         user_gift.user_email = user.email
-        print("------------------------------------",user)
+# 
+        user_gift.created_at = time.time()
+        # print("------------------------------------",time.time())
         yield from user_gift.update()
     
 
@@ -480,13 +477,142 @@ def api_activity_gift_select(request,*,id):
 
 @get('/manage/activity/{id}/report')
 def manage_activity_report(request,*,id):
-    check_admin(request)
     user_gifts = yield from UserGifts.findAll('activity_id=?',[id],orderBy='created_at desc')
-
     activity = yield from Activities.find(id)
     return{
         '__template__':'manage_activity_report.html',
         'user_gifts':user_gifts,
         'activity':activity
 
+    }
+
+#budget 
+@get("/manage/budgets")
+def manage_budgets(request,*,page=1):
+    page_index = get_page_index(page)
+    num = yield from Budgets.findNumber('count(id)')
+    page = Page(num,page_index)
+    if num == 0:
+        budgets = []
+    else:
+        budgets = yield from Budgets.findAll(orderBy='created_at desc', limit=(page.offset, page.limit))
+    return {
+        '__template__': 'manage_budgets.html',
+        'page':page,
+        'budgets':budgets
+    } 
+
+
+@post('/api/budgets')
+def api_budget(request,*,budget_name):
+    check_admin(request)
+    if not budget_name or not budget_name.strip() :
+        raise APIValueError('budget_name')
+    budget = Budgets(name=budget_name,creator=request.__user__.id,creator_name=request.__user__.name)
+    yield from budget.save()
+    return budget
+
+@get('/api/budget/{id}/delete')
+def api_delete_budget(request,*,id):
+    check_admin(request)
+    budget = yield from Budgets.find(id)
+    yield from budget.remove()
+    return dict(id=id)
+
+@get("/api/budget/{id}/state")
+def api_budget_state(request,*,id):
+    check_admin(request)
+    budget = yield from Budgets.find(id)
+    if budget.state == '1':
+        budget.state = '0'
+    else:
+        budget.state = '1'
+    yield from budget.update()    
+    return budget
+
+@get("/budgets")
+def budgets(*,page=1):
+    page_index = get_page_index(page)
+    num = yield from Budgets.findNumber('count(id)',where="state = '1'")
+    page = Page(num,page_index)
+    if num == 0:
+        budgets = []
+    else:
+        budgets = yield from Budgets.findAll(where="state='1'", orderBy='created_at desc', limit=(page.offset, page.limit))
+    return {
+        '__template__': 'budgets_index.html',
+        'page':page,
+        'budgets':budgets
+    }
+
+@get("/user/budgets/{id}")
+def budget(request,*,id):
+    user = request.__user__
+    budget = yield from Budgets.find(id)
+    if budget.state != "1":
+        return {
+            '__template__': 'errpage.html',
+            'errmsg': '活动已停止'
+        }  
+    user_budgets = yield from UserBudgets.findAll('user_id=? and budget_id=?',[user.id,id],orderBy="created_at desc")
+    
+    return {
+        '__template__':'budgets.html',
+        'user_budgets':user_budgets,
+        'budget':budget
+    }
+
+
+
+@get("/api/budget/{id}/del_user_budget/{user_budget_id}")
+def api_del_user_budget(request,*,id,user_budget_id):
+    user = request.__user__
+    if not user:
+        return dict(code=-1,msg="请先登录!")
+
+    budget = yield from Budgets.find(id)
+    if not budget:
+        return dict(code=-2,msg="预算不存在!")
+
+    if budget.state != "1":
+        return dict(code=-3,msg="预算已关闭!")    
+
+    user_budgets = yield from UserBudgets.findAll('id=? and budget_id=? and user_id=?',[user_budget_id,id,user.id])
+    if user_budgets:
+        yield from user_budgets[0].remove()
+    else:
+        return dict(code=-4,msg="记录不存在!")    
+
+    return dict(code=0,msg="删除成功")
+
+@post("/api/budget/{id}/add_user_budget")
+def api_add_user_budget(request,*,id,budget_type,budget_fee):
+    user = request.__user__
+    if not user:
+        return dict(code=-1,msg="请先登录!")
+
+    budget = yield from Budgets.find(id)
+    if not budget:
+        return dict(code=-2,msg="预算不存在!")
+
+    if budget.state != "1":
+        return dict(code=-3,msg="预算已关闭!")
+
+
+    user_budget = UserBudgets(user_id=user.id,user_name=user.name,user_email=user.email,
+        budget_id=budget.id,budget_type=budget_type,budget_fee=budget_fee)    
+    yield from user_budget.save()
+
+    return dict(code=0,msg="保存成功")    
+  
+
+@get("/manage/budget/{id}/report")
+def manage_budget_report(request,*,id):
+    check_admin(request)
+    budget = yield from Budgets.find(id)
+    user_budgets = yield from UserBudgets.findAll(orderBy="created_at desc")
+    return{
+        '__template__':'/manage_budget_report.html',
+        'user_budgets':user_budgets,
+        'budget':budget
     }

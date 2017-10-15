@@ -37,13 +37,13 @@
 <body>
     <nav class="uk-navbar uk-navbar-attached uk-margin-bottom">
         <div class="uk-container uk-container-center">
-            <a href="/" class="uk-navbar-brand">Awesome</a>
+            <a href="/" class="uk-navbar-brand uk-badge">Welfare&Budget</a>
             <ul class="uk-navbar-nav">
                 <li data-url="activities"><a href="/"><i class="uk-icon-gift"></i> 福利</a></li>
-                <li><a target="_blank" href="http://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000"><i class="uk-icon-cny"></i> 预算</a></li>
+                <li data-url="budgets"><a href="/budgets"><i class="uk-icon-cny"></i> 预算</a></li>
                 {% if __user__.admin %}
                 <li data-url="manage-activities"><a  href="/manage/activities"><i class="uk-icon-cog"></i> 福利管理</a></li>
-                <li ><a href="/manage/yusuan"><i class="uk-icon-cog"></i> 预算管理</a></li>
+                <li data-url="manage-budgets"><a href="/manage/budgets"><i class="uk-icon-cog"></i> 预算管理</a></li>
                 {% endif %}
                 
             </ul>

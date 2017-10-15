@@ -7,10 +7,6 @@
 <script>
 
 $(document).ready(function(){
-    $("[v-time]").each(function(index,element){
-        $(this).text(parseFloat($(this).attr('v-time')).toDateTime())
-
-    })
 
     $("#btn_submit").click(function(){
         $.ajax({
@@ -51,10 +47,10 @@ function switch_state(id){
 {% block content %}
 <div>
 
-    <form class="uk-form">
-        <label>新增活动名称 </label><input id="activity_name" type="text" name="activity_name" size="20">
+    <div class="uk-form">
+        <label>新增活动名称 </label><input id="activity_name" type="text" name="activity_name" size="20" maxlength="30">
         <button class="uk-button uk-button-primary" id="btn_submit" >保存</button>
-    </form>
+    </div>
 </div>
 
 <table class="uk-table uk-table-hover">
@@ -79,15 +75,16 @@ function switch_state(id){
             </td>
             <td>
                 <span><a href="/manage/activity/{{activity.id}}/gifts">礼物</a></span>
+            </td>
             <td>
-                <span><a href="#0" onclick="UIkit.modal.confirm('更改状态?', function(){ switch_state('{{ activity.id }}'); });">{% if activity.state == "1" %}<i class="uk-icon-unlock"></i>{% else %}<i class="uk-icon-lock"></i>{% endif %}</a></span>
+                <span><a href="#0" title="修改状态" onclick="UIkit.modal.confirm('更改状态?', function(){ switch_state('{{ activity.id }}'); });">{% if activity.state == "1" %}<i class="uk-icon-unlock"></i>{% else %}<i class="uk-icon-lock"></i>{% endif %}</a></span>
             </td>
             <td>
                 <span>{{ activity.creator_name }}</span>
             </td>
             <td>
-                <a href="/manage/activity/{{activity.id}}/report"><i class="uk-icon-table" alt="统计"></i> 
-                <a href="#0" onclick="UIkit.modal.confirm('确认删除么?', function(){ delete_activity('{{ activity.id }}'); });"><i class="uk-icon-trash-o"></i></a>
+                <a href="/manage/activity/{{activity.id}}/report"><i class="uk-icon-table" title="统计"></i> 
+                <a href="#0" title="删除" onclick="UIkit.modal.confirm('确认删除么?', function(){ delete_activity('{{ activity.id }}'); });"><i class="uk-icon-trash-o"></i></a>
             </td>
         </tr>
         {% endfor %}

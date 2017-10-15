@@ -35,12 +35,14 @@
             <div class="uk-panel-teaser">
                 <img src="../{{gift.image}}" alt="">
             </div>  
-
+            {% if __user__ %}
             <a class="uk-button uk-button-primary" href="#" onclick="select_gift('{{gift.id}}');">选择</a>
+            {% endif %}
         </div>
     </div>
     {% endfor %}
 </div>
+{% if __user__ %}
 <div>您选择的礼物</div>
 <div class="uk-grid">
     {% for user_gift in user_gifts %}
@@ -53,6 +55,6 @@
         </div>
     {% endfor %}
 </div>
-
+{% endif %}
 
 {% endblock %}

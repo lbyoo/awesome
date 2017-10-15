@@ -186,6 +186,13 @@ $(function() {
     });
 });
 
+$(function(){
+    $("[v-time]").each(function(index,element){
+        $(this).text(parseFloat($(this).attr('v-time')).toDateTime())
+
+    })
+})
+
 // JS Template:
 
 function Template(tpl) {
@@ -437,6 +444,12 @@ $(function() {
     }
     if (location.pathname === '/manage/activities' ) {
         $('li[data-url=manage-activities]').addClass('uk-active');
+    }
+    if (location.pathname === '/budgets' ) {
+        $('li[data-url=budgets]').addClass('uk-active');
+    }
+    if (location.pathname === '/manage/budgets' ) {
+        $('li[data-url=manage-budgets]').addClass('uk-active');
     }
 });
 

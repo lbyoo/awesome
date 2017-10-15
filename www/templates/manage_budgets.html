@@ -1,0 +1,92 @@
+{% extends '__base__.html' %}
+
+{% block title %}员工福利{% endblock %}
+
+{% block beforehead %}
+
+<script>
+
+$(document).ready(function(){
+    $("#btn_submit").click(function(){
+        $.ajax({
+            url:"/api/budgets",
+            type:"post",
+            data:"budget_name=" + $("#budget_name").val(),
+            success:function(rt){
+                refresh()
+            }
+
+        })    
+    })
+
+})
+function delete_budget(id){
+    $.ajax({
+        url:"/api/budget/" + id + "/delete",
+        type:"GET",
+        success:function(rt){
+            refresh()
+        }
+
+    })    
+}
+function switch_state(id){
+    $.ajax({
+        url:"/api/budget/" + id + "/state",
+        type:"GET",
+        success:function(rt){
+            refresh()
+        }
+    })
+}
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div>
+
+    <div class="uk-form">
+        <label>新增预算周期 </label><input id="budget_name" type="text" name="budget_name" size="20" maxlength="30">
+        <button class="uk-button uk-button-primary" id="btn_submit" >保存</button>
+    </div>
+</div>
+
+<table class="uk-table uk-table-hover">
+    <thead>
+        <tr>
+            <th class="uk-width-4-10">预算周期</th>
+            <th class="uk-width-2-10">创建时间</th>
+            <th class="uk-width-1-10">状态</th>
+            <th class="uk-width-1-10">创建者</th>
+            <th class="uk-width-1-10">操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for budget in budgets %}
+        <tr >
+            <td>
+                <a href="/user/budgets/{{budget.id}}">{{ budget.name }}</a>
+            </td>
+            <td>
+                <span v-time="{{ budget.created_at }}"></span>
+            </td>
+            <td>
+                <span><a href="#0" title="修改状态" onclick="UIkit.modal.confirm('更改状态?', function(){ switch_state('{{ budget.id }}'); });">{% if budget.state == "1" %}<i class="uk-icon-unlock"></i>{% else %}<i class="uk-icon-lock"></i>{% endif %}</a></span>
+            </td>
+            <td>
+                <span>{{ budget.creator_name }}</span>
+            </td>
+            <td>
+                <a href="/manage/budget/{{budget.id}}/report"><i class="uk-icon-table" title="统计"></i> 
+                <a href="#0" title="删除" onclick="UIkit.modal.confirm('确认删除么?', function(){ delete_budget('{{ budget.id }}'); });"><i class="uk-icon-trash-o"></i></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+{{ pagination('/manage/budgets?page=', page) }}
+
+
+{% endblock %}

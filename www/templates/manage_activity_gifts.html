@@ -4,14 +4,6 @@
 
 {% block beforehead %}
 <script>
-
-$(document).ready(function(){
-    $("[v-time]").each(function(index,element){
-        $(this).text(parseFloat($(this).attr('v-time')).toDateTime())
-    })
-
-
-})
 function delete_gift(id){
     var htmlobj = $.ajax({
         url:"/api/gift/" + id + "/delete",
@@ -40,8 +32,8 @@ function delete_gift(id){
         <thead>
             <tr>
                 <th class="uk-width-1-10">图片</th>
-                <th class="uk-width-5-10">礼物名称</th>
-                <th class="uk-width-1-10">创建时间</th>
+                <th class="uk-width-4-10">礼物名称</th>
+                <th class="uk-width-4-10">创建时间</th>
                 <th class="uk-width-1-10">操作</th>
             </tr>
         </thead>
