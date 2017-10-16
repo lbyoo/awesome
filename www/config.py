@@ -5,7 +5,7 @@
 Configuration
 '''
 
-__author__ = 'lbyoo'
+
 
 import config_default
 

@@ -5,7 +5,7 @@
 Override configurations.
 '''
 
-__author__ = 'lbyoo'
+
 
 configs = {
     'db': {
